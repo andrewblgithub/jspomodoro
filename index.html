@@ -29,17 +29,18 @@
     </style>
   </head>
   <body>
+    <audio id="audio" src="https://www.soundjay.com/clock/alarm-clock-01.mp3" autostart="false" ></audio>
     <div class="container">
       <table>
         <tr>
-          <td colspan="9" id="display">25:00 Left in Session</td>
+          <td colspan="9" id="display">It's Pomodoro Time!</td>
         </tr>
         <tr>
           <td><button onClick=lessBreak();>-</button></td>
           <td><button id="breakTime">5</button></td>
           <td><button onClick=moreBreak();>+</button></td>
           <td></td>
-          <td><button onClick="start();">Start/Stop</button></td>
+          <td><button onClick="start();">Start/Reset</button></td>
           <td></td>
           <td><button onClick=lessSession();>-</button></td>
           <td><button id="session">25</button></td>
@@ -48,31 +49,83 @@
       </table>
     </div>
     <script>
-      var display = document.getElementById("display");
-      var breakTime = document.getElementById("break");
+      var breakTime = document.getElementById("breakTime");
       var session = document.getElementById("session");
+      var display = document.getElementById("display");
+      var timerInterval;
+
       function start() {
-        display.innerHTML = "hey"; 
-      };
+        clearInterval(timerInterval);
+        var duration = parseInt(session.textContent, 10) * 60;
+        var durationBreak = parseInt(breakTime.textContent, 10) * 60;
+        var switchToken = 0;
+        var timer = duration;
+        var sound = document.getElementById("audio");
+        timerInterval = setInterval( function() {
+          var minutes = parseInt(timer / 60, 10);
+          var seconds = parseInt(timer % 60, 10);
+
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          seconds = seconds < 10 ? "0" + seconds : seconds;
+
+          if (switchToken == 0) {
+            display.textContent = minutes + ":" + seconds + " Left in Session";
+          } else if (switchToken == 1) {
+            display.textContent = minutes + ":" + seconds + " Left in Break";
+          }
+
+
+
+          if (--timer < 0) {
+            if (switchToken == 0) {
+              timer = durationBreak;
+              switchToken = 1;
+              sound.play();
+              var notification = new Notification("Break time!");
+            } else if (switchToken == 1) {
+              timer = duration;
+              switchToken = 0;
+              sound.play()
+              var notification = new Notification("Back to Work!");
+            }
+          }
+
+        }, 1000);
+      }
+
       function lessBreak() {
-        if (breakTime > 0) {
-          breakTime -= 1;
+        var b = breakTime.textContent;
+        b = parseInt(b);
+        if (b > 0) {
+          b -= 1;
         }
-      };
+        breakTime.textContent = b;
+      }
       function moreBreak() {
-        if (breakTime < 61) {
-          breakTime += 1;
+        var b = breakTime.textContent;
+        b = parseInt(b);
+        if (b < 30) {
+          b += 1;
         }
-      };
+        breakTime.textContent = b;
+      }
       function lessSession() {
-        if (session > 0) {
+        var s = session.textContent;
+        s = parseInt(s);
+        if (s > 0) {
+          s -= 1;
         }
-      };
+        session.textContent = s;
+      }
       function moreSession() {
-        if (session < 121) {
-          session += 1;
+        var s = session.textContent;
+        s = parseInt(s);
+        if (s < 60) {
+          s += 1;
         }
-      };
+        session.textContent = s;
+      }
+
     </script>
   </body>
 </html>
